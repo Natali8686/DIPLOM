@@ -1,6 +1,5 @@
 package ru.netology.page;
 
-
 import com.codeborne.selenide.SelenideElement;
 
 import java.time.Duration;
@@ -61,6 +60,6 @@ public class CreditPage {
     public void messageAboutTheMandatoryFillingInOfTheField () { //сообщение об обязательности заполнения поля
         cardExpired.shouldBe(visible, Duration.ofSeconds(10));
     }
-}
+
 }
 
