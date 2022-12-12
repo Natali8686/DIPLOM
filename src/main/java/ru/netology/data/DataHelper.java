@@ -6,7 +6,6 @@ import java.util.Locale;
 
 public class DataHelper {
     private static Faker faker = new Faker(new Locale("ru"));
-
     private DataHelper() {
     }
 
@@ -35,7 +34,7 @@ public class DataHelper {
     }
 
     public static String getValidOwner() {
-        return faker.name().fullName();
+         return faker.name().fullName();
     }
 
     public static String getValidCvc() {
