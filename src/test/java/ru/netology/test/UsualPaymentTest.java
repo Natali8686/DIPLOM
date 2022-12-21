@@ -1,29 +1,32 @@
 package ru.netology.test;
 
 import com.codeborne.selenide.logevents.SelenideLogger;
+import io.qameta.allure.selenide.AllureSelenide;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.netology.data.DataHelper;
 import ru.netology.data.DataHelperSQL;
-import ru.netology.page.CreditPage;
+import ru.netology.page.PaymentPage;
 import ru.netology.page.StartPage;
-
 
 import static com.codeborne.selenide.Selenide.open;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static ru.netology.data.DataHelperSQL.cleanDataBase;
 
-public class CreditPaymentTest {
-    CreditPage creditPage = new CreditPage();
+
+public class UsualPaymentTest {
+    PaymentPage paymentPage = new PaymentPage();
     StartPage startPage = new StartPage();
 
     @BeforeEach
-    void CleanDataBaseAndOpenWeb() {
+    void CleanDataBaseAndOpenWeb() { //очистить базу данных и открыть веб страницу
         cleanDataBase();
         startPage = open("http://localhost:8080", StartPage.class);
         startPage.buyPaymentByCard();
+    }
+
+    private void cleanDataBase() {
     }
 
     @BeforeAll
@@ -36,7 +39,6 @@ public class CreditPaymentTest {
         SelenideLogger.removeListener("allure");
     }
 
-
     @Test
     void shouldApproveFirstCard() {
         var cardNumber = DataHelper.getFirstCardNumber();
@@ -44,13 +46,12 @@ public class CreditPaymentTest {
         var year = DataHelper.getValidYear();
         var owner = DataHelper.getValidOwner();
         var cvc = DataHelper.getValidCvc();
-        creditPage.fillOutLine(cardNumber, month, year, owner, cvc);
-        creditPage.messageAboutSuccessfullPayment();
+        paymentPage.fillOutLine(cardNumber, month, year, owner, cvc);
+        paymentPage.messageAboutSuccessfulPayment();
         var expected = DataHelper.getStatusFirstCard();
-        var actual = DataHelperSQL.getPurchaseOnCreditCard();
+        var actual = DataHelperSQL.getPurchaseByDebitCard();
         assertEquals(expected, actual);
     }
-
 
     @Test
     void shouldApproveOwnerNameWithTheLetter() {
@@ -59,13 +60,12 @@ public class CreditPaymentTest {
         var year = DataHelper.getValidYear();
         var owner = DataHelper.getLetterEWithDots();
         var cvc = DataHelper.getValidCvc();
-        creditPage.fillOutLine(cardNumber, month, year, owner, cvc);
-        creditPage.messageAboutSuccessfullPayment();
+        paymentPage.fillOutLine(cardNumber, month, year, owner, cvc);
+        paymentPage.messageAboutSuccessfulPayment();
         var expected = DataHelper.getStatusFirstCard();
-        var actual = DataHelperSQL.getPurchaseOnCreditCard();
+        var actual = DataHelperSQL.getPurchaseByDebitCard();
         assertEquals(expected, actual);
     }
-
 
     @Test
     void shouldApproveDoubleNameOfTheOwner() {
@@ -74,10 +74,10 @@ public class CreditPaymentTest {
         var year = DataHelper.getValidYear();
         var owner = DataHelper.getDoubleNameOfTheOwner();
         var cvc = DataHelper.getValidCvc();
-        creditPage.fillOutLine(cardNumber, month, year, owner, cvc);
-        creditPage.messageAboutSuccessfullPayment();
+        paymentPage.fillOutLine(cardNumber, month, year, owner, cvc);
+        paymentPage.messageAboutSuccessfulPayment();
         var expected = DataHelper.getStatusFirstCard();
-        var actual = DataHelperSQL.getPurchaseOnCreditCard();
+        var actual = DataHelperSQL.getPurchaseByDebitCard();
         assertEquals(expected, actual);
     }
 
@@ -88,33 +88,33 @@ public class CreditPaymentTest {
         var year = DataHelper.getValidYear();
         var owner = DataHelper.getValidOwner();
         var cvc = DataHelper.getValidCvc();
-        creditPage.fillOutLine(cardNumber, month, year, owner, cvc);
-        creditPage.messageAboutUnsuccessfullPaymentRefused();
+        paymentPage.fillOutLine(cardNumber, month, year, owner, cvc);
+        paymentPage.messageAboutUnsuccessfulPaymentRefused();
         var expected = DataHelper.getStatusSecondCard();
-        var actual = DataHelperSQL.getPurchaseOnCreditCard();
+        var actual = DataHelperSQL.getPurchaseByDebitCard();
         assertEquals(expected, actual);
     }
 
     @Test
     void shouldLessThan16DigitsInTheCard() {
         var cardNumber = DataHelper.getLessThan16DigitsInTheCard();
-        var month = DataHelper.getValidMonth();
+        var month = DataHelper.getValidMonth(); //
         var year = DataHelper.getValidYear();
         var owner = DataHelper.getValidOwner();
         var cvc = DataHelper.getValidCvc();
-        creditPage.fillOutLine(cardNumber, month, year, owner, cvc);
-        creditPage.messageAboutIncorrectDataFormat();
+        paymentPage.fillOutLine(cardNumber, month, year, owner, cvc);
+        paymentPage.messageAboutIncorrectDataFormat();
     }
 
     @Test
     void should16ZerosInTheCard() {
         var cardNumber = DataHelper.get16ZerosInTheCard();
-        var month = DataHelper.getValidMonth(); //
+        var month = DataHelper.getValidMonth();
         var year = DataHelper.getValidYear();
         var owner = DataHelper.getValidOwner();
         var cvc = DataHelper.getValidCvc();
-        creditPage.fillOutLine(cardNumber, month, year, owner, cvc);
-        creditPage.messageAboutUnsuccessfullPaymentRefused();
+        paymentPage.fillOutLine(cardNumber, month, year, owner, cvc);
+        paymentPage.messageAboutUnsuccessfulPaymentRefused();
     }
 
     @Test
@@ -124,10 +124,9 @@ public class CreditPaymentTest {
         var year = DataHelper.getValidYear();
         var owner = DataHelper.getValidOwner();
         var cvc = DataHelper.getValidCvc();
-        creditPage.fillOutLine(cardNumber, month, year, owner, cvc);
-        creditPage.messageAboutIncorrectDataFormat();
+        paymentPage.fillOutLine(cardNumber, month, year, owner, cvc);
+        paymentPage.messageAboutIncorrectDataFormat();
     }
-
 
     @Test
     void shouldEmptyFieldInTheCard() {
@@ -136,10 +135,9 @@ public class CreditPaymentTest {
         var year = DataHelper.getValidYear();
         var owner = DataHelper.getValidOwner();
         var cvc = DataHelper.getValidCvc();
-        creditPage.fillOutLine(cardNumber, month, year, owner, cvc);
-        creditPage.messageAboutIncorrectDataFormat();
+        paymentPage.fillOutLine(cardNumber, month, year, owner, cvc);
+        paymentPage.messageAboutIncorrectDataFormat();
     }
-
 
     @Test
     void shouldLettersSymbolsTextInTheMonth() {
@@ -148,10 +146,9 @@ public class CreditPaymentTest {
         var year = DataHelper.getValidYear();
         var owner = DataHelper.getValidOwner();
         var cvc = DataHelper.getValidCvc();
-        creditPage.fillOutLine(cardNumber, month, year, owner, cvc);
-        creditPage.messageAboutIncorrectDataFormat();
+        paymentPage.fillOutLine(cardNumber, month, year, owner, cvc);
+        paymentPage.messageAboutIncorrectDataFormat();
     }
-
 
     @Test
     void shouldMonthNumberMore12() {
@@ -160,57 +157,53 @@ public class CreditPaymentTest {
         var year = DataHelper.getValidYear();
         var owner = DataHelper.getValidOwner();
         var cvc = DataHelper.getValidCvc();
-        creditPage.fillOutLine(cardNumber, month, year, owner, cvc);
-        creditPage.messageAboutIncorrectCardExpirationDate();
+        paymentPage.fillOutLine(cardNumber, month, year, owner, cvc);
+        paymentPage.messageAboutIncorrectCardExpirationDate();
     }
 
-    //2.7_Негативный тест с пустым полем месяца
     @Test
-    void shouldMonthFieldEmpty() { //пустой месяц
+    void shouldMonthFieldEmpty() {
         var cardNumber = DataHelper.getFirstCardNumber();
         var month = DataHelper.getMonthFieldEmpty();
         var year = DataHelper.getValidYear();
         var owner = DataHelper.getValidOwner();
         var cvc = DataHelper.getValidCvc();
-        creditPage.fillOutLine(cardNumber, month, year, owner, cvc);
-        creditPage.messageAboutIncorrectDataFormat();
+        paymentPage.fillOutLine(cardNumber, month, year, owner, cvc);
+        paymentPage.messageAboutIncorrectDataFormat();
     }
-
     @Test
     void shouldYearFieldPrevious() {
         var cardNumber = DataHelper.getFirstCardNumber();
-        var month = DataHelper.getValidMonth();
+        var month = DataHelper.getValidMonth(); //
         var year = DataHelper.getYearFieldPrevious();
         var owner = DataHelper.getValidOwner();
         var cvc = DataHelper.getValidCvc();
-        creditPage.fillOutLine(cardNumber, month, year, owner, cvc);
-        creditPage.messageAboutCardExpiration();
+        paymentPage.fillOutLine(cardNumber, month, year, owner, cvc);
+        paymentPage.messageAboutCardExpiration();
     }
 
     @Test
     void shouldYearMoreThan6YearsOfTheCurrentYear() {
         var cardNumber = DataHelper.getFirstCardNumber();
-        var month = DataHelper.getValidMonth();
+        var month = DataHelper.getValidMonth(); //
         var year = DataHelper.getMoreThan6YearsOfTheCurrentYear();
         var owner = DataHelper.getValidOwner();
         var cvc = DataHelper.getValidCvc();
-        creditPage.fillOutLine(cardNumber, month, year, owner, cvc);
-        creditPage.messageAboutIncorrectCardExpirationDate();
+        paymentPage.fillOutLine(cardNumber, month, year, owner, cvc);
+        paymentPage.messageAboutIncorrectCardExpirationDate();
     }
 
 
     @Test
     void shouldYearZero() {
         var cardNumber = DataHelper.getFirstCardNumber();
-        var month = DataHelper.getValidMonth();
+        var month = DataHelper.getValidMonth(); //
         var year = DataHelper.getYearZero();
         var owner = DataHelper.getValidOwner();
         var cvc = DataHelper.getValidCvc();
-        creditPage.fillOutLine(cardNumber, month, year, owner, cvc);
-        creditPage.messageAboutCardExpiration();
+        paymentPage.fillOutLine(cardNumber, month, year, owner, cvc);
+        paymentPage.messageAboutCardExpiration();
     }
-
-
     @Test
     void shouldLettersSymbolsTextInTheYear() {
         var cardNumber = DataHelper.getFirstCardNumber();
@@ -218,10 +211,9 @@ public class CreditPaymentTest {
         var year = DataHelper.getLettersSymbolsTextInTheYear();
         var owner = DataHelper.getValidOwner();
         var cvc = DataHelper.getValidCvc();
-        creditPage.fillOutLine(cardNumber, month, year, owner, cvc);
-        creditPage.messageAboutIncorrectDataFormat();
+        paymentPage.fillOutLine(cardNumber, month, year, owner, cvc);
+        paymentPage.messageAboutIncorrectDataFormat();
     }
-
 
     @Test
     void shouldYearFieldEmpty() {
@@ -230,20 +222,19 @@ public class CreditPaymentTest {
         var year = DataHelper.getYearFieldEmpty();
         var owner = DataHelper.getValidOwner();
         var cvc = DataHelper.getValidCvc();
-        creditPage.fillOutLine(cardNumber, month, year, owner, cvc);
-        creditPage.messageAboutIncorrectDataFormat();
+        paymentPage.fillOutLine(cardNumber, month, year, owner, cvc);
+        paymentPage.messageAboutIncorrectDataFormat();
     }
-
 
     @Test
     void shouldOnlyNameOwner() {
         var cardNumber = DataHelper.getFirstCardNumber();
-        var month = DataHelper.getValidMonth();
+        var month = DataHelper.getValidMonth(); //
         var year = DataHelper.getValidYear();
         var owner = DataHelper.getOnNameOwnertr();
         var cvc = DataHelper.getValidCvc();
-        creditPage.fillOutLine(cardNumber, month, year, owner, cvc);
-        creditPage.messageAboutSuccessfullPayment();
+        paymentPage.fillOutLine(cardNumber, month, year, owner, cvc);
+        paymentPage.messageAboutSuccessfulPayment();
     }
 
 
@@ -254,8 +245,8 @@ public class CreditPaymentTest {
         var year = DataHelper.getValidYear();
         var owner = DataHelper.getNameNndPatronymicWithSmallLetterInTheOwner();
         var cvc = DataHelper.getValidCvc();
-        creditPage.fillOutLine(cardNumber, month, year, owner, cvc);
-        creditPage.messageAboutSuccessfullPayment();
+        paymentPage.fillOutLine(cardNumber, month, year, owner, cvc);
+        paymentPage.messageAboutSuccessfulPayment();
     }
 
     @Test
@@ -265,10 +256,9 @@ public class CreditPaymentTest {
         var year = DataHelper.getValidYear();
         var owner = DataHelper.getMoreThan30CharactersInTheOwner();
         var cvc = DataHelper.getValidCvc();
-        creditPage.fillOutLine(cardNumber, month, year, owner, cvc);
-        creditPage.messageAboutSuccessfullPayment();
+        paymentPage.fillOutLine(cardNumber, month, year, owner, cvc);
+        paymentPage.messageAboutSuccessfulPayment();
     }
-
 
     @Test
     void shouldLettersSymbolsTextInTheOwner() {
@@ -277,8 +267,8 @@ public class CreditPaymentTest {
         var year = DataHelper.getValidYear();
         var owner = DataHelper.getLettersSymbolsTextInTheOwner();
         var cvc = DataHelper.getValidCvc();
-        creditPage.fillOutLine(cardNumber, month, year, owner, cvc);
-        creditPage.messageAboutSuccessfullPayment();
+        paymentPage.fillOutLine(cardNumber, month, year, owner, cvc);
+        paymentPage.messageAboutSuccessfulPayment();
     }
 
 
@@ -289,8 +279,8 @@ public class CreditPaymentTest {
         var year = DataHelper.getValidYear();
         var owner = DataHelper.getOwnerFieldEmpty();
         var cvc = DataHelper.getValidCvc();
-        creditPage.fillOutLine(cardNumber, month, year, owner, cvc);
-        creditPage.messageAboutTheMandatoryFillingInOfTheField();
+        paymentPage.fillOutLine(cardNumber, month, year, owner, cvc);
+        paymentPage.messageAboutTheMandatoryFillingInOfTheField();
     }
 
 
@@ -301,9 +291,10 @@ public class CreditPaymentTest {
         var year = DataHelper.getValidYear();
         var owner = DataHelper.getValidOwner();
         var cvc = DataHelper.getCvcZero();
-        creditPage.fillOutLine(cardNumber, month, year, owner, cvc);
-        creditPage.messageAboutSuccessfullPayment();
+        paymentPage.fillOutLine(cardNumber, month, year, owner, cvc);
+        paymentPage.messageAboutSuccessfulPayment();
     }
+
 
     @Test
     void shouldLettersSymbolsTextInTheCvc() {
@@ -312,9 +303,10 @@ public class CreditPaymentTest {
         var year = DataHelper.getValidYear();
         var owner = DataHelper.getValidOwner();
         var cvc = DataHelper.getLettersSymbolsTextInTheCvc();
-        creditPage.fillOutLine(cardNumber, month, year, owner, cvc);
-        creditPage.messageAboutIncorrectDataFormat();
+        paymentPage.fillOutLine(cardNumber, month, year, owner, cvc);
+        paymentPage.messageAboutIncorrectDataFormat();
     }
+
 
     @Test
     void shouldEmptyFieldInTheCvc() {
@@ -323,8 +315,8 @@ public class CreditPaymentTest {
         var year = DataHelper.getValidYear();
         var owner = DataHelper.getValidOwner();
         var cvc = DataHelper.getCvcFieldEmpty();
-        creditPage.fillOutLine(cardNumber, month, year, owner, cvc);
-        creditPage.messageAboutIncorrectDataFormat();
+        paymentPage.fillOutLine(cardNumber, month, year, owner, cvc);
+        paymentPage.messageAboutIncorrectDataFormat();
     }
 
 }

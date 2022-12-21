@@ -46,8 +46,8 @@ public class DataHelper {
     }
 
     public static String getDoubleNameOfTheOwner() {
-        return "Сара-Мария";
-    } // двойное имя
+        return "Сара-Мария"; // двойное имя
+    }
 
     public static String getLessThan16DigitsInTheCard() {
         return "1987 1685 9247 789";
