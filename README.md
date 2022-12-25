@@ -3,8 +3,8 @@
 ## Документация
 
 * [План выполнения работ](https://github.com/Natali8686/Diplom/blob/master/Plan.md)
-* [Отчет о проведенном тестировании]()
-* [Отчет о проведенной автоматизации]()
+* [Отчет о проведенном тестировании](https://github.com/Natali8686/Diplom/blob/master/Docs/Report.md)
+* [Отчет о проведенной автоматизации](https://github.com/Natali8686/Diplom/blob/master/Docs/Summary.md)
 
 
 ## О проекте
