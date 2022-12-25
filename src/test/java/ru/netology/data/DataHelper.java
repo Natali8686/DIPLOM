@@ -9,11 +9,11 @@ public class DataHelper {
     private DataHelper() {
     }
 
-    public static String getFirstCardNumber() {
+    public static String getFirstCardNumber() { // карта активная
         return "4444 4444 4444 4441";
     }
 
-    public static String getSecondCardNumber() {
+    public static String getSecondCardNumber() { // карта заблокированная
         return "4444 4444 4444 4442";
     }
 
@@ -78,11 +78,11 @@ public class DataHelper {
     }
 
     public static String getYearFieldPrevious() {
-        return "22";
+        return "20";
     }
 
     public static String getMoreThan6YearsOfTheCurrentYear() {
-        return "27";
+        return "28";
     }
 
     public static String getYearZero() {
@@ -98,7 +98,7 @@ public class DataHelper {
     }
 
     public static String getOnNameOwnertr() {
-        return "Petrov";
+        return "Саша";
     }
 
     public static String getNameNndPatronymicWithSmallLetterInTheOwner() {
@@ -118,7 +118,7 @@ public class DataHelper {
     }
 
     public static String getCvcZero() {
-        return "00";
+        return "000";
     }
 
     public static String getLettersSymbolsTextInTheCvc() {

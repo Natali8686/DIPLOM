@@ -1,5 +1,6 @@
 package ru.netology.test;
 
+import com.codeborne.selenide.Configuration;
 import com.codeborne.selenide.logevents.SelenideLogger;
 import io.qameta.allure.selenide.AllureSelenide;
 import org.junit.jupiter.api.AfterAll;
@@ -29,18 +30,19 @@ public class CreditPaymentTest {
     private void cleanDataBase() {
     }
 
-    @BeforeAll
+    @BeforeAll  // для дружбы Selenide и Allure
     static void setUpAll() {
         SelenideLogger.addListener("allure", new AllureSelenide());
     }
 
-    @AfterAll
+    @AfterAll // для дружбы Selenide и Allure
     static void tearDownAll() {
         SelenideLogger.removeListener("allure");
     }
 
     @Test
     void shouldApproveFirstCard() {
+        Configuration.holdBrowserOpen = true;
         var cardNumber = DataHelper.getFirstCardNumber();
         var month = DataHelper.getValidMonth();
         var year = DataHelper.getValidYear();
