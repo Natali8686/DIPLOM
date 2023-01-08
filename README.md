@@ -6,6 +6,16 @@
 * [Отчет о проведенном тестировании](https://github.com/Natali8686/Diplom/blob/master/Docs/Report.md)
 * [Отчет о проведенной автоматизации](https://github.com/Natali8686/Diplom/blob/master/Docs/Summary.md)
 
+### Для запуска приложения:
+
+1. С помощью Git cклонировать репозиторий командой git clone https://github.com/Natali8686/Diplom.git;
+2. Запустить Docker;
+3. Открыть проект в IntelliJ IDEA;
+4. В терминале IntelliJ IDEA запустить необходимые базы данных и нужные контейнеры командой `docker-compose up`;
+5. В новой вкладке терминала запустить jar-файл
+6. Проверить доступность приложения в браузере по адресу 
+   `http://localhost:8080/`
+
 
 ## О проекте
 Приложение представляет из себя веб-сервис.
