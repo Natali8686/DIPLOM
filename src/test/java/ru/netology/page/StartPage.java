@@ -2,25 +2,22 @@ package ru.netology.page;
 
 import com.codeborne.selenide.SelenideElement;
 
-import static com.codeborne.selenide.Condition.visible;
-import static com.codeborne.selenide.Selectors.byText;
-import static com.codeborne.selenide.Selenide.$;
+import static com.codeborne.selenide.Selectors.*;
+
+import static com.codeborne.selenide.Selenide.*;
+
 
 public class StartPage {
-    private SelenideElement buyButton = $(byText("Купить"));
-    private SelenideElement byCard = $(byText("Оплата по карте"));
-    private SelenideElement buyOnCreditButton = $(byText("Купить в кредит"));
-    private SelenideElement byCredit = $(byText("Кредит по данным карты"));
+    private SelenideElement paymentButton = $(byText("Купить"));
+    private SelenideElement creditButton = $(byText("Купить в кредит"));
 
-    public PaymentPage buyPaymentByCard() {
-        buyButton.click();
-        byCard.shouldBe(visible);
+    public PaymentPage checkPaymentButton() {
+        paymentButton.click();
         return new PaymentPage();
     }
 
-    public CreditPage buyPaymentByCredit() {
-        buyOnCreditButton.click();
-        byCredit.shouldBe(visible);
+    public CreditPage checkCreditButton() {
+        creditButton.click();
         return new CreditPage();
     }
 

@@ -1,83 +1,57 @@
 package ru.netology.data;
 
+
 import lombok.SneakyThrows;
 import lombok.val;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.ScalarHandler;
 
 import java.sql.DriverManager;
-import java.sql.SQLException;
 
-import static java.sql.DriverManager.getConnection;
+
 
 public class DataHelperSQL {
-    private static final String url = System.getProperty("url");
-    private static final String user = System.getProperty("user");
-    private static final String password = System.getProperty("password");
+    private static String url = System.getProperty("db.url");
+    private static String user = System.getProperty("db.user");
+    private static String password = System.getProperty("db.password");
 
-    private DataHelperSQL() {
-    }
-
-    public static String getPurchaseByDebitCard() { //покупка дебетовой картой
-        var statusBD = "SELECT status FROM payment_entity ORDER BY created DESC LIMIT 1";
-
-        try (
-                var connection = getConnection(url, user, password);
-                var payStatus = connection.createStatement()
+    @SneakyThrows
+    public static void clearTables() { //очистить БД
+        val deletePaymentEntity = "DELETE FROM payment_entity";
+        val deleteCreditEntity = "DELETE FROM credit_request_entity";
+        val deleteOrderEntity = "DELETE FROM order_entity";
+        val runner = new QueryRunner();
+        try (val conn = DriverManager.getConnection(
+                url, user, password)
         ) {
-            try (var rs = payStatus.executeQuery(statusBD)) {
-                if (rs.next()) {
-                    var status = rs.getString(1);
-                    return status;
-                }
-                return null;
-            }
-        } catch (SQLException exception) {
-            exception.printStackTrace();
+            runner.update(conn, deletePaymentEntity);
+            runner.update(conn, deleteCreditEntity);
+            runner.update(conn, deleteOrderEntity);
         }
-        return null;
     }
 
-    public static String getPurchaseOnCreditCard() { //покупка в кредит
-        var statusBD = "SELECT status FROM credit_request_entity ORDER BY created DESC LIMIT 1";
-
-        try (
-                var connection = getConnection(url, user, password);
-                var payStatus = connection.createStatement()
-        ) {
-            try (var rs = payStatus.executeQuery(statusBD)) {
-                if (rs.next()) {
-                    var status = rs.getString(1);
-                    return status;
-                }
-                return null;
-            }
-        } catch (SQLException exception) {
-            exception.printStackTrace();
-        }
-        return null;
+    @SneakyThrows
+    public static String getPaymentStatus() { //статус дебетовой карты
+        String status = "SELECT status FROM payment_entity";
+        return getStatus(status);
     }
 
+    @SneakyThrows
+    public static String getCreditStatus() { // статус кредитной карты
+        String status = "SELECT status FROM credit_request_entity";
+        return getStatus(status);
+    }
 
-    public static void cleanDataBase() { //очистить БД
-
-        var payment = "DELETE FROM payment_entity";
-        var credit = "DELETE FROM credit_request_entity";
-        var order = "DELETE FROM order_entity";
-
-
-        try (
-                var conn = getConnection(url, user, password);
-                var prepareStatCredit = conn.createStatement();
-                var prepareStatOrder = conn.createStatement();
-                var prepareStatPayment = conn.createStatement()
+    @SneakyThrows
+    public static String getStatus(String status) {
+        String result = "";
+        val runner = new QueryRunner();
+        try (val conn = DriverManager.getConnection(
+                url, user, password)
         ) {
-            prepareStatCredit.executeUpdate(credit);
-            prepareStatOrder.executeUpdate(order);
-            prepareStatPayment.executeUpdate(payment);
-
-        } catch (SQLException exception) {
-            exception.printStackTrace();
+            result = runner.query(conn, status, new ScalarHandler<String>());
+            System.out.println(result);
+            return result;
         }
     }
 }

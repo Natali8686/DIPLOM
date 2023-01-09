@@ -1,342 +1,270 @@
 package ru.netology.test;
 
-import com.codeborne.selenide.Configuration;
+
 import com.codeborne.selenide.logevents.SelenideLogger;
 import io.qameta.allure.selenide.AllureSelenide;
+import lombok.SneakyThrows;
+import lombok.val;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import ru.netology.data.DataHelper;
+import ru.netology.data.CardInfo;
 import ru.netology.data.DataHelperSQL;
-import ru.netology.page.CreditPage;
 import ru.netology.page.StartPage;
+
 
 import static com.codeborne.selenide.Selenide.open;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static ru.netology.data.DataHelper.*;
+import static ru.netology.data.DataHelper.getValidCVC;
+
 
 
 public class CreditPaymentTest {
-    CreditPage creditPage = new CreditPage();
-    StartPage startPage = new StartPage();
-
-    @BeforeEach
-    void CleanDataBaseAndOpenWeb() {
-        cleanDataBase();
-        startPage = open("http://localhost:8080", StartPage.class);
-        startPage.buyPaymentByCard();
-    }
-
-    private void cleanDataBase() {
-    }
-
-    @BeforeAll  // для дружбы Selenide и Allure
+    @BeforeAll
     static void setUpAll() {
         SelenideLogger.addListener("allure", new AllureSelenide());
     }
 
-    @AfterAll // для дружбы Selenide и Allure
+    @AfterAll
     static void tearDownAll() {
         SelenideLogger.removeListener("allure");
     }
 
-    @Test
-    void shouldApproveFirstCard() {
-        Configuration.holdBrowserOpen = true;
-        var cardNumber = DataHelper.getFirstCardNumber();
-        var month = DataHelper.getValidMonth();
-        var year = DataHelper.getValidYear();
-        var owner = DataHelper.getValidOwner();
-        var cvc = DataHelper.getValidCvc();
-        creditPage.fillOutLine(cardNumber, month, year, owner, cvc);
-        creditPage.messageAboutSuccessfullPayment();
-        var expected = DataHelper.getStatusFirstCard();
-        var actual = DataHelperSQL.getPurchaseOnCreditCard();
-        assertEquals(expected, actual);
+    @BeforeEach
+    void setUp() {
+        open("http://localhost:8080/");
+        DataHelperSQL.clearTables();
     }
 
-
+    // #20
+    @SneakyThrows
     @Test
-    void shouldApproveOwnerNameWithTheLetter() {
-        var cardNumber = DataHelper.getFirstCardNumber();
-        var month = DataHelper.getValidMonth();
-        var year = DataHelper.getValidYear();
-        var owner = DataHelper.getLetterEWithDots();
-        var cvc = DataHelper.getValidCvc();
-        creditPage.fillOutLine(cardNumber, month, year, owner, cvc);
-        creditPage.messageAboutSuccessfullPayment();
-        var expected = DataHelper.getStatusFirstCard();
-        var actual = DataHelperSQL.getPurchaseOnCreditCard();
-        assertEquals(expected, actual);
+    void shouldStatusBuyCreditValidActiveCard() {
+        CardInfo card = new CardInfo(getValidActiveCard(), getCurrentMonth(), getNextYear(), getValidOwner(), getValidCVC());
+        val mainPage = new StartPage();
+        mainPage.checkCreditButton().
+                fillingForm(card).
+                checkApprovedForm();
+        assertEquals("APPROVED", DataHelperSQL.getCreditStatus());
     }
 
-    // Двойное имя в поле Владелец
+    //# 21 failed
+    @SneakyThrows
     @Test
-    void shouldApproveDoubleNameOfTheOwner() {
-        var cardNumber = DataHelper.getFirstCardNumber();
-        var month = DataHelper.getValidMonth();
-        var year = DataHelper.getValidYear();
-        var owner = DataHelper.getDoubleNameOfTheOwner();
-        var cvc = DataHelper.getValidCvc();
-        creditPage.fillOutLine(cardNumber, month, year, owner, cvc);
-        creditPage.messageAboutSuccessfullPayment();
-        var expected = DataHelper.getStatusFirstCard();
-        var actual = DataHelperSQL.getPurchaseOnCreditCard();
-        assertEquals(expected, actual);
+    void shouldStatusBuyCreditValidDeclinedCard() {
+        CardInfo card = new CardInfo(getValidDeclinedCard(), getCurrentMonth(), getNextYear(), getValidOwner(), getValidCVC());
+        val mainPage = new StartPage();
+        mainPage.checkCreditButton().
+                fillingForm(card).
+                checkDeclinedForm();
+        assertEquals("DECLINED", DataHelperSQL.getCreditStatus());
     }
 
+    //# 22
+    @SneakyThrows
     @Test
-    void shouldApproveSecondCard() {
-        var cardNumber = DataHelper.getSecondCardNumber();
-        var month = DataHelper.getValidMonth();
-        var year = DataHelper.getValidYear();
-        var owner = DataHelper.getValidOwner();
-        var cvc = DataHelper.getValidCvc();
-        creditPage.fillOutLine(cardNumber, month, year, owner, cvc);
-        creditPage.messageAboutUnsuccessfullPaymentRefused();
-        var expected = DataHelper.getStatusSecondCard();
-        var actual = DataHelperSQL.getPurchaseOnCreditCard();
-        assertEquals(expected, actual);
+    void shouldBuyCreditInvalidCard() {
+        CardInfo card = new CardInfo(getInvalidNumberCard(), getCurrentMonth(), getNextYear(), getValidOwner(), getValidCVC());
+        val mainPage = new StartPage();
+        mainPage.checkCreditButton().
+                fillingForm(card).
+                checkDeclinedForm();
+        assertNull(DataHelperSQL.getCreditStatus());
     }
 
-    // 1. В поле "Номер карты" ввести номер карты, содержащий меньше 16 цифр.
+    //# 23
+    @SneakyThrows
     @Test
-    void shouldLessThan16DigitsInTheCard() {
-        var cardNumber = DataHelper.getLessThan16DigitsInTheCard();
-        var month = DataHelper.getValidMonth();
-        var year = DataHelper.getValidYear();
-        var owner = DataHelper.getValidOwner();
-        var cvc = DataHelper.getValidCvc();
-        creditPage.fillOutLine(cardNumber, month, year, owner, cvc);
-        creditPage.messageAboutIncorrectDataFormat();
+    void shouldBuyCreditInvalidPatternCard() {
+        CardInfo card = new CardInfo(getInvalidPatternNumberCard(), getCurrentMonth(), getNextYear(), getValidOwner(), getValidCVC());
+        val mainPage = new StartPage();
+        mainPage.checkCreditButton().
+                fillingForm(card).
+                checkCardNumberError();
+        assertNull(DataHelperSQL.getCreditStatus());
     }
 
-    // 2. В поле "Номер карты" ввести номер карты, содержащий 16 нулей
+    // # 24
+    @SneakyThrows
     @Test
-    void should16ZerosInTheCard() {
-        var cardNumber = DataHelper.get16ZerosInTheCard();
-        var month = DataHelper.getValidMonth(); //
-        var year = DataHelper.getValidYear();
-        var owner = DataHelper.getValidOwner();
-        var cvc = DataHelper.getValidCvc();
-        creditPage.fillOutLine(cardNumber, month, year, owner, cvc);
-        creditPage.messageAboutUnsuccessfullPaymentRefused();
+    void shouldBuyCreditEmptyCard() {
+        CardInfo card = new CardInfo(getEmptyNumberCard(), getCurrentMonth(), getNextYear(), getValidOwner(), getValidCVC());
+        val mainPage = new StartPage();
+        mainPage.checkCreditButton().
+                fillingForm(card).
+                checkCardNumberError();
+        assertNull(DataHelperSQL.getCreditStatus());
     }
 
-    // 3. В поле "Номер карты" ввести номер карты, содержащий латинские буквы, арабскую вязь, иероглифы, спецсимволы
+    // # 25 failed
+    @SneakyThrows
     @Test
-    void shouldLettersSymbolsTextInTheCard() {
-        var cardNumber = DataHelper.getLettersSymbolsText();
-        var month = DataHelper.getValidMonth();
-        var year = DataHelper.getValidYear();
-        var owner = DataHelper.getValidOwner();
-        var cvc = DataHelper.getValidCvc();
-        creditPage.fillOutLine(cardNumber, month, year, owner, cvc);
-        creditPage.messageAboutIncorrectDataFormat();
+    void shouldBuyCreditZeroCard() {
+        CardInfo card = new CardInfo(getZeroNumberCard(), getCurrentMonth(), getNextYear(), getValidOwner(), getValidCVC());
+        val mainPage = new StartPage();
+        mainPage.checkCreditButton().
+                fillingForm(card).
+                checkCardNumberError();
+        assertNull(DataHelperSQL.getCreditStatus());
     }
 
-    // 4. Поле "Номер карты" оставить пустым
+    // #26 failed
+    @SneakyThrows
     @Test
-    void shouldEmptyFieldInTheCard() {
-        var cardNumber = DataHelper.getEmptyFieldInTheCard();
-        var month = DataHelper.getValidMonth();
-        var year = DataHelper.getValidYear();
-        var owner = DataHelper.getValidOwner();
-        var cvc = DataHelper.getValidCvc();
-        creditPage.fillOutLine(cardNumber, month, year, owner, cvc);
-        creditPage.messageAboutIncorrectDataFormat();
+    void shouldBuyCreditInvalidMonthCardExpiredCardError() {
+        CardInfo card = new CardInfo(getValidActiveCard(), getPreviousMonth(), getCurrentYear(), getValidOwner(), getValidCVC());
+        val mainPage = new StartPage();
+        mainPage.checkCreditButton().
+                fillingForm(card).
+                checkExpiredCardError();
+        assertNull(DataHelperSQL.getCreditStatus());
     }
 
-    // 5. В поле "Месяц" ввести латинские буквы, арабскую вязь, иероглифы, спецсимволы
+    // #27
+    @SneakyThrows
     @Test
-    void shouldLettersSymbolsTextInTheMonth() {
-        var cardNumber = DataHelper.getFirstCardNumber();
-        var month = DataHelper.getLettersSymbolsTextInTheMonth();
-        var year = DataHelper.getValidYear();
-        var owner = DataHelper.getValidOwner();
-        var cvc = DataHelper.getValidCvc();
-        creditPage.fillOutLine(cardNumber, month, year, owner, cvc);
-        creditPage.messageAboutIncorrectDataFormat();
+    void shouldBuyCreditInvalidMonth() {
+        CardInfo card = new CardInfo(getValidActiveCard(), getInvalidMonth(), getCurrentYear(), getValidOwner(), getValidCVC());
+        val mainPage = new StartPage();
+        mainPage.checkCreditButton().
+                fillingForm(card).
+                checkMonthError();
+        assertNull(DataHelperSQL.getCreditStatus());
     }
 
-    // 6. В поле "Месяц" ввести номер месяца больше 12
+    // #28 failed
+    @SneakyThrows
     @Test
-    void shouldMonthNumberMore12() {
-        var cardNumber = DataHelper.getFirstCardNumber();
-        var month = DataHelper.getMonthNumberMore12();
-        var year = DataHelper.getValidYear();
-        var owner = DataHelper.getValidOwner();
-        var cvc = DataHelper.getValidCvc();
-        creditPage.fillOutLine(cardNumber, month, year, owner, cvc);
-        creditPage.messageAboutIncorrectCardExpirationDate();
+    void shouldBuyCreditZeroMonth() {
+        CardInfo card = new CardInfo(getValidActiveCard(), getZeroMonth(), getNextYear(), getValidOwner(), getValidCVC());
+        val mainPage = new StartPage();
+        mainPage.checkCreditButton().
+                fillingForm(card).
+                checkMonthError();
+        assertNull(DataHelperSQL.getCreditStatus());
     }
 
-    //7_Негативный тест с пустым полем месяца
+    // #29
+    @SneakyThrows
     @Test
-    void shouldMonthFieldEmpty() { //пустой месяц
-        var cardNumber = DataHelper.getFirstCardNumber();
-        var month = DataHelper.getMonthFieldEmpty();
-        var year = DataHelper.getValidYear();
-        var owner = DataHelper.getValidOwner();
-        var cvc = DataHelper.getValidCvc();
-        creditPage.fillOutLine(cardNumber, month, year, owner, cvc);
-        creditPage.messageAboutIncorrectDataFormat();
+    void shouldBuyCreditEmptyMonth() {
+        CardInfo card = new CardInfo(getValidActiveCard(), getEmptyMonth(), getNextYear(), getValidOwner(), getValidCVC());
+        val mainPage = new StartPage();
+        mainPage.checkCreditButton().
+                fillingForm(card).
+                checkMonthError();
+        assertNull(DataHelperSQL.getCreditStatus());
     }
 
-    // 8. В поле "Год" ввести прошедший год
+    // #30
+    @SneakyThrows
     @Test
-    void shouldYearFieldPrevious() {
-        var cardNumber = DataHelper.getFirstCardNumber();
-        var month = DataHelper.getValidMonth();
-        var year = DataHelper.getYearFieldPrevious();
-        var owner = DataHelper.getValidOwner();
-        var cvc = DataHelper.getValidCvc();
-        creditPage.fillOutLine(cardNumber, month, year, owner, cvc);
-        creditPage.messageAboutCardExpiration();
+    void shouldBuyCreditInvalidYearCard() {
+        CardInfo card = new CardInfo(getValidActiveCard(), getCurrentMonth(), getPreviousYear(), getValidOwner(), getValidCVC());
+        val mainPage = new StartPage();
+        mainPage.checkCreditButton().
+                fillingForm(card).
+                checkYearError();
+        assertNull(DataHelperSQL.getCreditStatus());
     }
 
-    // 9. В поле "Год" ввести год на 6 лет больше текущего года
+    // #31
+    @SneakyThrows
     @Test
-    void shouldYearMoreThan6YearsOfTheCurrentYear() {
-        var cardNumber = DataHelper.getFirstCardNumber();
-        var month = DataHelper.getValidMonth();
-        var year = DataHelper.getMoreThan6YearsOfTheCurrentYear();
-        var owner = DataHelper.getValidOwner();
-        var cvc = DataHelper.getValidCvc();
-        creditPage.fillOutLine(cardNumber, month, year, owner, cvc);
-        creditPage.messageAboutIncorrectCardExpirationDate();
+    void shouldBuyCreditEmptyYear() {
+        CardInfo card = new CardInfo(getValidActiveCard(), getCurrentMonth(), getEmptyYear(), getValidOwner(), getValidCVC());
+        val mainPage = new StartPage();
+        mainPage.checkCreditButton().
+                fillingForm(card).
+                checkYearError();
+        assertNull(DataHelperSQL.getCreditStatus());
     }
 
-    // 10. Нули в поле Год
+    // #32
+    @SneakyThrows
     @Test
-    void shouldYearZero() {
-        var cardNumber = DataHelper.getFirstCardNumber();
-        var month = DataHelper.getValidMonth();
-        var year = DataHelper.getYearZero();
-        var owner = DataHelper.getValidOwner();
-        var cvc = DataHelper.getValidCvc();
-        creditPage.fillOutLine(cardNumber, month, year, owner, cvc);
-        creditPage.messageAboutCardExpiration();
+    void shouldBuyCreditZeroYear() {
+        CardInfo card = new CardInfo(getValidActiveCard(), getCurrentMonth(), getZeroYear(), getValidOwner(), getValidCVC());
+        val mainPage = new StartPage();
+        mainPage.checkCreditButton().
+                fillingForm(card).
+                checkYearError();
+        assertNull(DataHelperSQL.getCreditStatus());
     }
 
-    // 11. Символы в поле Год
+    // #33 failed
+    @SneakyThrows
     @Test
-    void shouldLettersSymbolsTextInTheYear() {
-        var cardNumber = DataHelper.getFirstCardNumber();
-        var month = DataHelper.getValidMonth();
-        var year = DataHelper.getLettersSymbolsTextInTheYear();
-        var owner = DataHelper.getValidOwner();
-        var cvc = DataHelper.getValidCvc();
-        creditPage.fillOutLine(cardNumber, month, year, owner, cvc);
-        creditPage.messageAboutIncorrectDataFormat();
+    void shouldBuyCreditRussianOwner() {
+        CardInfo card = new CardInfo(getValidActiveCard(), getCurrentMonth(), getNextYear(), getInvalidLocaleOwner(), getValidCVC());
+        val mainPage = new StartPage();
+        mainPage.checkCreditButton().
+                fillingForm(card).
+                checkOwnerError();
+        assertNull(DataHelperSQL.getCreditStatus());
     }
 
-    // 12. Поле "Год" оставить пустым
+    // #34 failed
+    @SneakyThrows
     @Test
-    void shouldYearFieldEmpty() {
-        var cardNumber = DataHelper.getFirstCardNumber();
-        var month = DataHelper.getValidMonth();
-        var year = DataHelper.getYearFieldEmpty();
-        var owner = DataHelper.getValidOwner();
-        var cvc = DataHelper.getValidCvc();
-        creditPage.fillOutLine(cardNumber, month, year, owner, cvc);
-        creditPage.messageAboutIncorrectDataFormat();
+    void shouldBuyCreditFirstNameOwner() {
+        CardInfo card = new CardInfo(getValidActiveCard(), getCurrentMonth(), getNextYear(), getInvalidOwner(), getValidCVC());
+        val mainPage = new StartPage();
+        mainPage.checkCreditButton().
+                fillingForm(card).
+                checkOwnerError();
+        assertNull(DataHelperSQL.getCreditStatus());
     }
 
-    // 13. В поле "Владелец" ввести только имя
+    // #35
+    @SneakyThrows
     @Test
-    void shouldOnlyNameOwner() {
-        var cardNumber = DataHelper.getFirstCardNumber();
-        var month = DataHelper.getValidMonth();
-        var year = DataHelper.getValidYear();
-        var owner = DataHelper.getOnNameOwnertr();
-        var cvc = DataHelper.getValidCvc();
-        creditPage.fillOutLine(cardNumber, month, year, owner, cvc);
-        creditPage.messageAboutSuccessfullPayment();
+    void shouldBuyCreditEmptyOwner() {
+        CardInfo card = new CardInfo(getValidActiveCard(), getCurrentMonth(), getNextYear(), getEmptyOwner(), getValidCVC());
+        val mainPage = new StartPage();
+        mainPage.checkCreditButton().
+                fillingForm(card).
+                checkOwnerError();
+        assertNull(DataHelperSQL.getCreditStatus());
     }
 
-    // 14. В поле "Владелец" ввести только имя фамилию и отчество с маленькой буквы
+    // #36
+    @SneakyThrows
     @Test
-    void shouldNameAndPatronymicWithSmallLetterInTheOwner() {
-        var cardNumber = DataHelper.getFirstCardNumber();
-        var month = DataHelper.getValidMonth();
-        var year = DataHelper.getValidYear();
-        var owner = DataHelper.getNameNndPatronymicWithSmallLetterInTheOwner();
-        var cvc = DataHelper.getValidCvc();
-        creditPage.fillOutLine(cardNumber, month, year, owner, cvc);
-        creditPage.messageAboutSuccessfullPayment();
+    void shouldBuyCreditInvalidCVC() {
+        CardInfo card = new CardInfo(getValidActiveCard(), getCurrentMonth(), getNextYear(), getValidOwner(), getInvalidCVC());
+        val mainPage = new StartPage();
+        mainPage.checkCreditButton().
+                fillingForm(card).
+                checkCVCError();
+        assertNull(DataHelperSQL.getCreditStatus());
     }
 
-    // 15. В поле "Владелец" ввести более 30 символов
+    // #37
+    @SneakyThrows
     @Test
-    void shouldMoreThan30CharactersInTheOwner() {
-        var cardNumber = DataHelper.getFirstCardNumber();
-        var month = DataHelper.getValidMonth();
-        var year = DataHelper.getValidYear();
-        var owner = DataHelper.getMoreThan30CharactersInTheOwner();
-        var cvc = DataHelper.getValidCvc();
-        creditPage.fillOutLine(cardNumber, month, year, owner, cvc);
-        creditPage.messageAboutSuccessfullPayment();
+    void shouldBuyCreditEmptyCVC() {
+        CardInfo card = new CardInfo(getValidActiveCard(), getCurrentMonth(), getNextYear(), getValidOwner(), getEmptyCVC());
+        val mainPage = new StartPage();
+        mainPage.checkCreditButton().
+                fillingForm(card).
+                checkCVCError();
+        assertNull(DataHelperSQL.getCreditStatus());
     }
 
-    // 16. В поле "Владелец" ввести латинские буквы, арабскую вязь, иероглифы, спецсимволы
+    // #38 failed
+    @SneakyThrows
     @Test
-    void shouldLettersSymbolsTextInTheOwner() {
-        var cardNumber = DataHelper.getFirstCardNumber();
-        var month = DataHelper.getValidMonth();
-        var year = DataHelper.getValidYear();
-        var owner = DataHelper.getLettersSymbolsTextInTheOwner();
-        var cvc = DataHelper.getValidCvc();
-        creditPage.fillOutLine(cardNumber, month, year, owner, cvc);
-        creditPage.messageAboutSuccessfullPayment();
-    }
-
-    // 17. Поле "Владелец" оставить пустым
-    @Test
-    void shouldOwnerFieldEmpty() {
-        var cardNumber = DataHelper.getFirstCardNumber();
-        var month = DataHelper.getValidMonth();
-        var year = DataHelper.getValidYear();
-        var owner = DataHelper.getOwnerFieldEmpty();
-        var cvc = DataHelper.getValidCvc();
-        creditPage.fillOutLine(cardNumber, month, year, owner, cvc);
-        creditPage.messageAboutTheMandatoryFillingInOfTheField();
-    }
-
-    // 18. Тест с нулями в поле CVC
-    @Test
-    void shouldCvcZero() {
-        var cardNumber = DataHelper.getFirstCardNumber();
-        var month = DataHelper.getValidMonth();
-        var year = DataHelper.getValidYear();
-        var owner = DataHelper.getValidOwner();
-        var cvc = DataHelper.getCvcZero();
-        creditPage.fillOutLine(cardNumber, month, year, owner, cvc);
-        creditPage.messageAboutSuccessfullPayment();
-    }
-
-    //19. тест с символами, иероглифами в поле Cvc
-    @Test
-    void shouldLettersSymbolsTextInTheCvc() {
-        var cardNumber = DataHelper.getFirstCardNumber();
-        var month = DataHelper.getValidMonth();
-        var year = DataHelper.getValidYear();
-        var owner = DataHelper.getValidOwner();
-        var cvc = DataHelper.getLettersSymbolsTextInTheCvc();
-        creditPage.fillOutLine(cardNumber, month, year, owner, cvc);
-        creditPage.messageAboutIncorrectDataFormat();
-    }
-
-    // 20. Тест с пустым полем CVC
-    @Test
-    void shouldEmptyFieldInTheCvc() {
-        var cardNumber = DataHelper.getFirstCardNumber();
-        var month = DataHelper.getValidMonth();
-        var year = DataHelper.getValidYear();
-        var owner = DataHelper.getValidOwner();
-        var cvc = DataHelper.getCvcFieldEmpty();
-        creditPage.fillOutLine(cardNumber, month, year, owner, cvc);
-        creditPage.messageAboutIncorrectDataFormat();
+    void shouldBuyCreditZeroCVC() {
+        CardInfo card = new CardInfo(getValidActiveCard(), getCurrentMonth(), getNextYear(), getValidOwner(), getZeroCVC());
+        val mainPage = new StartPage();
+        mainPage.checkCreditButton().
+                fillingForm(card).
+                checkCVCError();
+        assertNull(DataHelperSQL.getCreditStatus());
     }
 
 }
