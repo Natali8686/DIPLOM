@@ -21,7 +21,6 @@ import static ru.netology.data.DataHelper.*;
 import static ru.netology.data.DataHelper.getValidCVC;
 
 
-
 public class CreditPaymentTest {
     @BeforeAll
     static void setUpAll() {
@@ -39,10 +38,10 @@ public class CreditPaymentTest {
         DataHelperSQL.clearTables();
     }
 
-    // #20
+
     @SneakyThrows
     @Test
-    void shouldStatusBuyCreditValidActiveCard() {
+    void shouldStatusBuyCreditValidActiveCard() { // 1. Успешная оплата тура по активной карте
         CardInfo card = new CardInfo(getValidActiveCard(), getCurrentMonth(), getNextYear(), getValidOwner(), getValidCVC());
         val mainPage = new StartPage();
         mainPage.checkCreditButton().
@@ -51,10 +50,10 @@ public class CreditPaymentTest {
         assertEquals("APPROVED", DataHelperSQL.getCreditStatus());
     }
 
-    //# 21 failed
+
     @SneakyThrows
     @Test
-    void shouldStatusBuyCreditValidDeclinedCard() {
+    void shouldStatusBuyCreditValidDeclinedCard() {// 2. Отклонение оплаты тура по заблокированной карте
         CardInfo card = new CardInfo(getValidDeclinedCard(), getCurrentMonth(), getNextYear(), getValidOwner(), getValidCVC());
         val mainPage = new StartPage();
         mainPage.checkCreditButton().
@@ -63,10 +62,10 @@ public class CreditPaymentTest {
         assertEquals("DECLINED", DataHelperSQL.getCreditStatus());
     }
 
-    //# 22
+    // НЕГАТИВНЫЕ СЦЕНАРИИ
     @SneakyThrows
     @Test
-    void shouldBuyCreditInvalidCard() {
+    void shouldBuyCreditInvalidCard() { // 2. Отклонение оплаты тура по несуществующей карте
         CardInfo card = new CardInfo(getInvalidNumberCard(), getCurrentMonth(), getNextYear(), getValidOwner(), getValidCVC());
         val mainPage = new StartPage();
         mainPage.checkCreditButton().
@@ -75,10 +74,10 @@ public class CreditPaymentTest {
         assertNull(DataHelperSQL.getCreditStatus());
     }
 
-    //# 23
+
     @SneakyThrows
     @Test
-    void shouldBuyCreditInvalidPatternCard() {
+    void shouldBuyCreditInvalidPatternCard() { // 1. В поле "Номер карты" ввести номер карты, содержащий меньше 16 цифр.
         CardInfo card = new CardInfo(getInvalidPatternNumberCard(), getCurrentMonth(), getNextYear(), getValidOwner(), getValidCVC());
         val mainPage = new StartPage();
         mainPage.checkCreditButton().
@@ -87,10 +86,10 @@ public class CreditPaymentTest {
         assertNull(DataHelperSQL.getCreditStatus());
     }
 
-    // # 24
+
     @SneakyThrows
     @Test
-    void shouldBuyCreditEmptyCard() {
+    void shouldBuyCreditEmptyCard() { // 4. Поле "Номер карты" оставить пустым
         CardInfo card = new CardInfo(getEmptyNumberCard(), getCurrentMonth(), getNextYear(), getValidOwner(), getValidCVC());
         val mainPage = new StartPage();
         mainPage.checkCreditButton().
@@ -99,10 +98,9 @@ public class CreditPaymentTest {
         assertNull(DataHelperSQL.getCreditStatus());
     }
 
-    // # 25 failed
     @SneakyThrows
     @Test
-    void shouldBuyCreditZeroCard() {
+    void shouldBuyCreditZeroCard() { // 3. В поле "Номер карты" ввести номер карты, содержащий 16 нулей
         CardInfo card = new CardInfo(getZeroNumberCard(), getCurrentMonth(), getNextYear(), getValidOwner(), getValidCVC());
         val mainPage = new StartPage();
         mainPage.checkCreditButton().
@@ -111,10 +109,10 @@ public class CreditPaymentTest {
         assertNull(DataHelperSQL.getCreditStatus());
     }
 
-    // #26 failed
+
     @SneakyThrows
     @Test
-    void shouldBuyCreditInvalidMonthCardExpiredCardError() {
+    void shouldBuyCreditInvalidMonthCardExpiredCardError() { // 5. В поле "Месяц" ввести невалидное значение (истекший срок действия карты)
         CardInfo card = new CardInfo(getValidActiveCard(), getPreviousMonth(), getCurrentYear(), getValidOwner(), getValidCVC());
         val mainPage = new StartPage();
         mainPage.checkCreditButton().
@@ -123,10 +121,10 @@ public class CreditPaymentTest {
         assertNull(DataHelperSQL.getCreditStatus());
     }
 
-    // #27
+
     @SneakyThrows
     @Test
-    void shouldBuyCreditInvalidMonth() {
+    void shouldBuyCreditInvalidMonth() { // 6. В поле "Месяц" ввести номер месяца больше 12
         CardInfo card = new CardInfo(getValidActiveCard(), getInvalidMonth(), getCurrentYear(), getValidOwner(), getValidCVC());
         val mainPage = new StartPage();
         mainPage.checkCreditButton().
@@ -135,10 +133,10 @@ public class CreditPaymentTest {
         assertNull(DataHelperSQL.getCreditStatus());
     }
 
-    // #28 failed
+
     @SneakyThrows
     @Test
-    void shouldBuyCreditZeroMonth() {
+    void shouldBuyCreditZeroMonth() { // 7. В поле "Месяц" ввести 00.
         CardInfo card = new CardInfo(getValidActiveCard(), getZeroMonth(), getNextYear(), getValidOwner(), getValidCVC());
         val mainPage = new StartPage();
         mainPage.checkCreditButton().
@@ -147,10 +145,10 @@ public class CreditPaymentTest {
         assertNull(DataHelperSQL.getCreditStatus());
     }
 
-    // #29
+
     @SneakyThrows
     @Test
-    void shouldBuyCreditEmptyMonth() {
+    void shouldBuyCreditEmptyMonth() { // 8.Поле "Месяц" оставить пустым.
         CardInfo card = new CardInfo(getValidActiveCard(), getEmptyMonth(), getNextYear(), getValidOwner(), getValidCVC());
         val mainPage = new StartPage();
         mainPage.checkCreditButton().
@@ -159,10 +157,10 @@ public class CreditPaymentTest {
         assertNull(DataHelperSQL.getCreditStatus());
     }
 
-    // #30
+
     @SneakyThrows
     @Test
-    void shouldBuyCreditInvalidYearCard() {
+    void shouldBuyCreditInvalidYearCard() { // 9. В поле "Год" ввести прошедший год
         CardInfo card = new CardInfo(getValidActiveCard(), getCurrentMonth(), getPreviousYear(), getValidOwner(), getValidCVC());
         val mainPage = new StartPage();
         mainPage.checkCreditButton().
@@ -171,10 +169,10 @@ public class CreditPaymentTest {
         assertNull(DataHelperSQL.getCreditStatus());
     }
 
-    // #31
+
     @SneakyThrows
     @Test
-    void shouldBuyCreditEmptyYear() {
+    void shouldBuyCreditEmptyYear() {// 11. Поле "Год" оставить пустым
         CardInfo card = new CardInfo(getValidActiveCard(), getCurrentMonth(), getEmptyYear(), getValidOwner(), getValidCVC());
         val mainPage = new StartPage();
         mainPage.checkCreditButton().
@@ -183,10 +181,10 @@ public class CreditPaymentTest {
         assertNull(DataHelperSQL.getCreditStatus());
     }
 
-    // #32
+
     @SneakyThrows
     @Test
-    void shouldBuyCreditZeroYear() {
+    void shouldBuyCreditZeroYear() { // 10. В поле "Год" ввести нулевой год "00"
         CardInfo card = new CardInfo(getValidActiveCard(), getCurrentMonth(), getZeroYear(), getValidOwner(), getValidCVC());
         val mainPage = new StartPage();
         mainPage.checkCreditButton().
@@ -195,10 +193,10 @@ public class CreditPaymentTest {
         assertNull(DataHelperSQL.getCreditStatus());
     }
 
-    // #33 failed
+
     @SneakyThrows
     @Test
-    void shouldBuyCreditRussianOwner() {
+    void shouldBuyCreditRussianOwner() { // 12. В поле "Владелец" ввести имя, фамилию на русской раскладке клавиатуры.
         CardInfo card = new CardInfo(getValidActiveCard(), getCurrentMonth(), getNextYear(), getInvalidLocaleOwner(), getValidCVC());
         val mainPage = new StartPage();
         mainPage.checkCreditButton().
@@ -207,10 +205,10 @@ public class CreditPaymentTest {
         assertNull(DataHelperSQL.getCreditStatus());
     }
 
-    // #34 failed
+
     @SneakyThrows
     @Test
-    void shouldBuyCreditFirstNameOwner() {
+    void shouldBuyCreditFirstNameOwner() { // 13. В поле "Владелец" ввести только имя
         CardInfo card = new CardInfo(getValidActiveCard(), getCurrentMonth(), getNextYear(), getInvalidOwner(), getValidCVC());
         val mainPage = new StartPage();
         mainPage.checkCreditButton().
@@ -219,10 +217,10 @@ public class CreditPaymentTest {
         assertNull(DataHelperSQL.getCreditStatus());
     }
 
-    // #35
+
     @SneakyThrows
     @Test
-    void shouldBuyCreditEmptyOwner() {
+    void shouldBuyCreditEmptyOwner() {// 14. Поле "Владелец" оставить пустым
         CardInfo card = new CardInfo(getValidActiveCard(), getCurrentMonth(), getNextYear(), getEmptyOwner(), getValidCVC());
         val mainPage = new StartPage();
         mainPage.checkCreditButton().
@@ -231,10 +229,10 @@ public class CreditPaymentTest {
         assertNull(DataHelperSQL.getCreditStatus());
     }
 
-    // #36
+
     @SneakyThrows
     @Test
-    void shouldBuyCreditInvalidCVC() {
+    void shouldBuyCreditInvalidCVC() { // 16. В поле "CVC/CVV" ввести только 2 цифры
         CardInfo card = new CardInfo(getValidActiveCard(), getCurrentMonth(), getNextYear(), getValidOwner(), getInvalidCVC());
         val mainPage = new StartPage();
         mainPage.checkCreditButton().
@@ -243,10 +241,10 @@ public class CreditPaymentTest {
         assertNull(DataHelperSQL.getCreditStatus());
     }
 
-    // #37
+
     @SneakyThrows
     @Test
-    void shouldBuyCreditEmptyCVC() {
+    void shouldBuyCreditEmptyCVC() { // 17. Поле "CVC/CVV" оставить пустым
         CardInfo card = new CardInfo(getValidActiveCard(), getCurrentMonth(), getNextYear(), getValidOwner(), getEmptyCVC());
         val mainPage = new StartPage();
         mainPage.checkCreditButton().
@@ -255,10 +253,10 @@ public class CreditPaymentTest {
         assertNull(DataHelperSQL.getCreditStatus());
     }
 
-    // #38 failed
+
     @SneakyThrows
     @Test
-    void shouldBuyCreditZeroCVC() {
+    void shouldBuyCreditZeroCVC() { // 15. В поле "CVC/CVV" ввести "нули"
         CardInfo card = new CardInfo(getValidActiveCard(), getCurrentMonth(), getNextYear(), getValidOwner(), getZeroCVC());
         val mainPage = new StartPage();
         mainPage.checkCreditButton().
