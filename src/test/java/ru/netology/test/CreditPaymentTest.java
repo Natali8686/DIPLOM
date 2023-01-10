@@ -112,8 +112,8 @@ public class CreditPaymentTest {
 
     @SneakyThrows
     @Test
-    void shouldBuyCreditInvalidMonthCardExpiredCardError() { // 5. В поле "Месяц" ввести невалидное значение (истекший срок действия карты)
-        CardInfo card = new CardInfo(getValidActiveCard(), getPreviousMonth(), getCurrentYear(), getValidOwner(), getValidCVC());
+    void shouldBuyCreditInvalidMonthCardExpiredCardError() { // 5. В поле "Месяц" ввести невалидное значение (истекший срок действия карты или текущий месяц текущего года)
+        CardInfo card = new CardInfo(getValidActiveCard(), getFirstMonth() ,getCurrentYear(), getValidOwner(), getValidCVC());
         val mainPage = new StartPage();
         mainPage.checkCreditButton().
                 fillingForm(card).
